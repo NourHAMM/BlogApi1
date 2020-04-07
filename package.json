@@ -1,7 +1,7 @@
 {
-  "name": "firstnodeap",
+  "name": "blogapi1",
   "version": "1.0.0",
-  "description": "First Note App",
+  "description": "Blog Node REST API",
   "main": "./src/index.js",
   "author": "NourHAMM <60269159+NourHAMM@users.noreply.github.com>",
   "license": "MIT",
