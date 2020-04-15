@@ -30,51 +30,63 @@ const postSchema = Joi.object({
   
   export const getAll = async () => {
     const posts = await db('posts')
-      return posts
+    const postsPromises = posts.map(async post => {
+      const author = await db('users')
+        .where({ id: post.author })
+        .first()
+      post.author = author
+      return post  
+    })
+    return await Promise.all(postsPromises)
+  }   
+
+  export const getById = async id => {
+    const post = await db('posts')
+      .where({ id })
+      .first()
+    if (post) {
+      const author = await db('users')
+        .where({ id: post.author })
+        .first()
+      return { ...post, author }
+    } else {
+      return null
     }
-    
-    export const getById = async id => {
-        const post = await db('posts')
-          .where({ id })
-          .first()
-          return post
-        }
+  }
 
 export const add = async post => {
-    const postObject = createNewPostObject(post)
-        if (!postObject.error) {
-        const postDB = await db('posts')    
-            .insert(postObject)
-            .returning('*')
-            return postObject
-            } else  {
-            return postObject
-        }
+   const postObject = createNewPostObject(post)
+  if (!postObject.error) {
+    const id = await db('posts').insert(post)
+    return await getById(id[0])
+  } else {
+    return postObject
+  }
     }
 
-export const update = async (post, id) => {
-            if (await getById(id)) {        
-              const postObject = createPostObject(post)
-              if (!postObject.error) {
-                await db('posts')
-                  .where({ id })
-                  .update(postObject)
-                return await getById(id)
-              } else {
-                return postObject
-              }
-            } else {
-              return null
-            }          
-          }
-          
-export const remove = async id => {
-            await db('posts')
-              .where({ id })
-              .del()
-            return { msg: 'Ok' }
-          }
-          
+    export const update = async (post, id) => {
+      if (await getById(id)) {
+        const postObject = createPostObject(post)
+        if (!postObject.error) {
+          await db('posts')
+            .where({ id })
+            .update(postObject)
+          return await getById(id)
+        } else {
+          return postObject
+        }
+      } else {
+        return null
+      }
+    }
+
+    
+    export const remove = async id => {
+      await db('posts')
+        .where({ id })
+        .del()
+      return { msg: 'Ok' }
+    }
   
   
   
